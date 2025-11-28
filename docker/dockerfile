@@ -1,0 +1,52 @@
+# 多阶段构建的完整版本
+FROM ubuntu:20.04 as builder
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PATH=/opt/conda/bin:$PATH
+
+# 一次性安装所有依赖和conda
+RUN apt-get update && apt-get install -y \
+    wget \
+    bzip2 \
+    ca-certificates \
+    && wget -q https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease/Miniforge3-25.9.1-0-Linux-x86_64.sh -O /tmp/miniforge.sh \
+    && bash /tmp/miniforge.sh -b -p /opt/conda \
+    && rm /tmp/miniforge.sh \
+    && conda config --add channels bioconda \
+    && conda config --add channels conda-forge \
+    && conda config --set channel_priority strict \
+    && mamba install -y \
+        fastp \
+        ngs-bits \
+        xdgene::bamdst \
+        smaca \
+        ensembl-vep=115 \
+        bcftools \
+        samtools \
+        pandas \
+        numpy \
+        tqdm \
+        pyyaml \
+    && mamba clean -a -y \
+    && apt-get autoremove -y wget bzip2 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# 最终阶段
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PATH=/opt/conda/bin:$PATH
+
+# 只复制conda环境和必要的系统库
+COPY --from=builder /opt/conda /opt/conda
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制脚本
+COPY scripts/* /scripts/
+
+WORKDIR /workspace
+
+CMD ["/bin/bash", "-c", "conda activate base && /bin/bash"]

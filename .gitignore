@@ -1,0 +1,16 @@
+# 忽略 Python 缓存
+__pycache__/
+*.pyc
+
+# 忽略 Snakemake 自身生成的隐藏目录
+.snakemake/
+
+# 忽略日志文件
+logs/
+*.log
+
+# 忽略数据文件 (根据你的目录结构)
+sample_info/raw_haima_csv/
+sample_info/snakemake_sample_yaml/
+results/
+raw_data/

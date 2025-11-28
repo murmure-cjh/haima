@@ -1,0 +1,150 @@
+# 流程参数 线程
+threads: 8
+
+# Docker配置
+docker:
+  image: "xiaohaima"
+  volumes:
+    - "-v /haplox/users/chenjh/database/:/haplox/users/chenjh/database/"
+
+# Docker容器内的脚本路径配置
+Docker_scripts:
+  anno_caller: "/scripts/anno_caller.py"
+  haimaresult: "/scripts/haimaresult.py"
+  haima_snp: "/scripts/haima_snp.py"
+  transform_haima_result: "/scripts/transform_haima_result.py"
+  qc_fload_analysis: "/scripts/qc_fload_analysis.py"
+  deal_sma_workout: "/scripts/deal_sma_workout.py"
+  deal_sma_dipin_result: "/scripts/deal_sma_dipin_result.py"
+
+# 上传配置
+upload:
+  ossutil_path: "/opt/ossutil"
+  oss_bucket: "oss://haperp/uploads/haimavcf"
+
+
+# 软件路径
+sentieon_dir: "/x05_haplox/ctDNA/sentieon-genomics-202308.03/bin/sentieon"
+sentieon_license: "192.168.1.29:8990"
+# fastp: "/x05_haplox/users/wangx/anaconda3/envs/xiaohaima/bin/fastp"
+# gatk: "/x05_haplox/users/wangx/anaconda3/envs/xiaohaima/bin/gatk"
+# gatk_jar: "/x05_haplox/users/wangx/anaconda3/envs/xiaohaima/share/gatk4-4.3.0.0-0/gatk-package-4.3.0.0-local.jar"
+bamdst: "/x03_haplox/users/donglf/bin/bamdst"
+# CNVkit 配置
+#cnvkit: "/x03_haplox/users/xiaoyue/miniconda3/envs/cnvkit910/bin/cnvkit.py"
+#cnv_python: "/x03_haplox/users/xiaoyue/miniconda3/envs/cnvkit910/bin/python"
+#cnvkit_bed: "/x03_haplox/users/xiaoyue/16_sop/xwes/auto_sop/CNVkit_DB/sz_hg19_my_flat_reference.cnn"
+# SMA 配置
+#smaca: "/x03_haplox/users/xiaoyue/miniconda3/envs/smaca/bin/smaca"
+
+# DMD bam文件路径
+dmd_bd_man_dir: "/haplox/users/chenjh/database/haima_file/dmd_bd/Male_bam/"
+dmd_bd_woman_dir: "/haplox/users/chenjh/database/haima_file/dmd_bd/Female_bam/"
+
+# Dipin 配置
+dipin_docker_container: "nad-hgbp-miniwes-lite:latest"
+docker_annovar_path: "/x03_haplox/users/xiaoyue/8_hg_db/annovar/"
+
+# 参考基因组
+ref: "/haplox/users/chenjh/database/genomes/hs37d5/hs37d5.chr.fa"
+hg38: "/haplox/users/chenjh/database/genomes/hg38/hg38.fa"
+
+# 注释数据库文件
+mills_indel: "/haplox/users/chenjh/database/haima_file/Realigner_indel/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf"
+phase1_indel: "/haplox/users/chenjh/database/haima_file/Realigner_indel/1000G_phase1.indels.hg19.sites.vcf"
+hg38_snps: "/haplox/users/chenjh/database/haima_file/Realigner_indel/resources_broad_hg38_v0_1000G_phase1.snps.high_confidence.hg38.vcf"
+hg38_indels: "/haplox/users/chenjh/database/haima_file/Realigner_indel/resources_broad_hg38_v0_Mills_and_1000G_gold_standard.indels.hg38.vcf"
+hg38_dbsnp: "/haplox/users/chenjh/database/haima_file/Realigner_indel/dbsnp.vcf.gz"
+hg38_annovar: "/haplox/users/chenjh/database/annovar/hg38_db/"
+
+# 流程，目前主要有三个流程，大天机-NAD2501_WES，小天机-NAD-XTJ2211，小全外-NAD2403_miniWES
+# 2025.11.21 新增流程 轻悦安，精准瘦身基因检测，升级版-MAD34PULES（探针名待定）
+# BED文件配置 - 根据panel类型动态选择
+# 目前只存在三个panel
+BED_FILE_DICT:
+  "NAD2501_WES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2501_WES/NEXome_XP-65site.probe.cover.hg19.bed"
+  "NAD-XTJ2211": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD-XTJ2211/probe-covered.merged.bed"
+  "NAD2403_miniWES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2403_miniWES/HaploX_miniWES_0829.nochrm.bed"
+  #"MAD-34PULES": "/haplox/users/chenjh/database/bed_file/MRD_120nt/MDR_120nt.bed" 
+# 在原来的bed文件的基础上扩展±100bp
+BED_FILE_QC_DICT:
+  "NAD2501_WES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2501_WES/NEXome_XP-65site.probe.cover.ext100.hg19.bed"
+  "NAD-XTJ2211": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD-XTJ2211/probe-covered_slop100.merged.bed"
+  "NAD2403_miniWES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2403_miniWES/HaploX_miniWES_0829.slop100.bed"
+  #"MAD-34PULES": "/haplox/users/chenjh/database/bed_file/MRD_120nt/MDR_120nt_slop60.bed" 
+
+# 性别分析参数配置
+GENDER_PARAMS:
+  NAD2403_miniWES: "-min_male 0.04 -max_female 0.01"
+  NAD2501_WES: ""  # 使用默认参数
+  default: ""  # 默认参数
+
+
+## bed文件
+# 药物bed,为所有项目药物bed的并集
+durg_bed: "/haplox/users/chenjh/database/haima_file/durg/drugandfeature_rs_gene.bed"
+haima_bed: "/haplox/users/chenjh/database/haima_file/haima_all_new.bed"
+
+# Dipin BED文件（固定不变）
+dipin_bed_slop60: "/haplox/users/chenjh/database/haima_file/dipin_bed/NEXome_mini-HGBP_region.hg38.slop60.bed"
+
+## 脚本路径
+# 质控脚本
+#qc_python_script: "/haplox/users/chenjh/haima/snakemake/scripts/qc_fload_analysis.py"
+# 注释脚本
+# annovar与vep注释
+#anno_caller_script: "/haplox/users/chenjh/haima/snakemake/scripts/anno_caller.py"
+# 注释结果处理
+#haimaresult_script: "/haplox/users/chenjh/haima/snakemake/scripts/haimaresult.py" 
+# 药物基因组脚本
+#haima_snp_script: "/haplox/users/chenjh/haima/snakemake/scripts/haima_snp.py"
+# 转换结果格式脚本
+#transform_haima_script: "/haplox/users/chenjh/haima/snakemake/scripts/transform_haima_result.py"
+# sma脚本
+#deal_sma_script: "/haplox/users/chenjh/haima/snakemake/scripts/deal_sma_workout.py"
+
+# anno_caller.py 脚本中ANNOVAR和VEP配置 
+annotation:
+  # ANNOVAR相关路径
+  annovar_script: "/haplox/users/chenjh/database/annovar/table_annovar.pl"
+  annovar_db: "/haplox/users/chenjh/database/annovar/humandb"
+  
+  # VEP相关路径
+  vep_env: "/haplox/users/chenjh/miniforge3/envs/vep_clone"
+  fasta_hs37d5: "/haplox/users/chenjh/database/genomes/hs37d5/hs37d5.chr.fa"
+  vep_cache_dir: "/haplox/users/chenjh/database/vep_cache"
+  vep_plugins_dir: "/haplox/users/chenjh/database/vep_plugins/"
+  
+  # 数据库文件路径
+  hgnc_transcript_db: "/haplox/users/chenjh/database/haima_file/hgnc_Transcript.txt"
+  exclude_chr_list: "/haplox/users/chenjh/database/haima_file/rm_chr.list"
+  spliceai_snv: "/haplox/users/chenjh/database/vep_plugins/spliceai/spliceai_scores.masked.snv.hg19.vcf.gz"
+  spliceai_indel: "/haplox/users/chenjh/database/vep_plugins/spliceai/spliceai_scores.masked.indel.hg19.vcf.gz"
+  maxentscan_dir: "/haplox/users/chenjh/database/vep_plugins/MaxEntScan"
+  
+  # 默认参数
+  ref: "hg19"
+  vep_cache_version: "115"  
+  vep_fork: "20"
+
+# haimaresult.py数据库配置
+haima_processor:
+  database_root: "/haplox/users/chenjh/database/haima_file/"
+  hgmd: "/haplox/users/chenjh/database/haima_file/hgmd_pro_2018.3_hg19.vcf"
+  omim: "/haplox/users/chenjh/database/haima_file/morbidmap.txt"
+  pseudogene: "/haplox/users/chenjh/database/haima_file/hgnc_pseudogene.txt"
+  vaf_baseline: "/haplox/users/chenjh/database/haima_file/10936sample.snv.baseline"
+  gene_correction: "/haplox/users/chenjh/database/haima_file/gene_anno_db.tsv"
+  intron_anno: "/haplox/users/chenjh/database/haima_file/intron_anno_db.tsv"
+  report_genes: "/haplox/users/chenjh/database/haima_file/LRGClinVarHGNC_germline.txt"
+
+# acmg_classifier.py ACMG分类器配置
+acmg_classifier:
+  database_root: "/haplox/users/chenjh/database/haima_file/ACMG"
+  clinvar: "/haplox/users/chenjh/database/haima_file/ACMG/ClinVar_format.txt"
+  bic_brca1: "/haplox/users/chenjh/database/haima_file/ACMG/BICBRCA1_format.txt"
+  bic_brca2: "/haplox/users/chenjh/database/haima_file/ACMG/BICBRCA2_format.txt"
+  tp53: "/haplox/users/chenjh/database/haima_file/ACMG/TP53_format.txt"
+  high_frequency_threshold: 0.05
+  splicing_distance_threshold: 2
+  cds_end_threshold: 50

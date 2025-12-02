@@ -588,7 +588,7 @@ class HaimaProcessor:
         ref = corrected_variant.get('Vcf_mut', '').split(':')[-1].split('/')[0] if 'Vcf_mut' in corrected_variant else corrected_variant.get('ref', '')
         alt = corrected_variant.get('Alt', '')
         
-        db_key = f"{chrom}\t{pos}\t{ref}\t{alt}"
+        db_key = f"{chrom.replace('chr', '')}\t{pos}\t{ref}\t{alt}" 
         corrected_variant['HGMD'] = self.hgmd_db.get(db_key, ".")
         
         # 步骤5: 应用OMIM注释

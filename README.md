@@ -1,3 +1,6 @@
+# snakemake.log文件快速查找报错
+AttributeError
+
 # 查看和杀死snakemake相关的任务
 ps aux | grep snakemake
 kill -9 id 
@@ -13,7 +16,7 @@ source activate /haplox/users/chenjh/miniforge3/envs/snakemake
 coscli cp cos://sz-hapseq/rawfq/JX_health/Nova/sample_info_merge/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.csv  sample_info/raw_haima_csv/
 
 # 数据预处理脚本，包括下载数据(默认下载到raw_data文件夹下)等，从样本信息表中下载fq文件+获取流程配置文件
-python scripts/haima_preprocess.py -i sample_info/raw_haima_csv/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.csv -o sample_info/snakemake_sample_yaml/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.yaml
+python scripts/workflow_scripts/haima_preprocess.py -i sample_info/raw_haima_csv/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.csv -o sample_info/snakemake_sample_yaml/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.yaml
 
 # 运行流程，使用对应的样本配置文件，如果不指定，默认使用日期最新的配置文件（03总共72个cpu）
 snakemake --cores 36 -p
@@ -22,7 +25,6 @@ nohup snakemake --cores 36 -p --config sample_config="sample_info/snakemake_samp
 
 
 # 当前路径文件夹说明
-drwxrwxr-x 8 chenjh chenjh    4096 11月 17 09:24 benchmarks   基准测试，内容文件为之前测试流程中每一步资源消耗的情况，但是因为Docker原因，资源消耗量的数值有异
 -rw-rw-r-- 1 chenjh chenjh    4424 11月 21 17:01 config.yaml  整个流程的配置文件，包含注释前步骤依赖的固定路径，如bed文件，参考基因组等，文件中有具体的注释说明
 -rw-r--r-- 1 chenjh chenjh   35386 11月 24 08:46 coscli.log   coscli 下载的日志，目前coscli版本不支持自定义日志路径
 drwxrwxr-x 3 chenjh chenjh      49 11月 17 17:38 docker       Dockerfile 以及需要导入Docker的脚本
@@ -39,6 +41,7 @@ drwxrwxr-x 3 chenjh chenjh    4096 11月 21 14:35 scripts      所有脚本的�
 
 
 # 脚本文件夹说明
+# /haplox/users/chenjh/haima/snakemake/scripts/analysis_scripts
 -rw-rw-r-- 1 chenjh chenjh 20396 11月  6 11:09 acmg_classifier.py        acmg评级规则脚本，导入haimaresult.py脚本中使用
 -rw-rw-r-- 1 chenjh chenjh 31743 11月 21 18:01 anno_caller.py            注释脚本，包含annovar与vep注释，并整合结果
 -rw-rw-r-- 1 chenjh chenjh 13332 11月 21 14:35 deal_sma_dipin_result.py  处理地贫和sma结果为可上传的格式
@@ -51,6 +54,13 @@ drwxrwxr-x 2 chenjh chenjh   135 11月 11 11:08 __pycache__
 -rw-rw-r-- 1 chenjh chenjh 13200 11月 21 17:22 transform_haima_result.py 海码结果处理脚本，处理haimaresult.py和haima_snp.py的结果为IT需要的格式
 
 
+# /haplox/users/chenjh/haima/snakemake/scripts/workflow_scripts
+
+-rwxrwxr-x 1 chenjh chenjh 19519 11月 24 10:42 haima_preprocess.py        预处理脚本，是将拆分给的csv表转换为snakemake流程需要yaml文件
+-rw-rw-r-- 1 chenjh chenjh  3899 11月 28 16:20 merge_qc.py                合并质控结果的脚本，在全部样本分析完成后会将所有样本的qc结果和样本csv表合并，然后作为结束邮件的附件
+-rwxrwxr-x 1 chenjh chenjh 11373 11月 28 16:20 monitor.py                 监控脚本，send_mail和merge_qc都为里面的模块，负责自动开始分析snakemake流程
+drwxrwxr-x 2 chenjh chenjh    81 11月 28 16:21 __pycache__
+-rwxrwxr-x 1 chenjh chenjh  5579 11月 28 11:27 send_mail.py               发送邮件脚本，完全来自于旧流程
 
 
 

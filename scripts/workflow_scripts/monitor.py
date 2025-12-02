@@ -127,15 +127,25 @@ def run_snakemake_workflow(batch_id):
         # 切换到工作目录
         original_dir = os.getcwd()
         os.chdir(snakemake_work_dir)
-                
-        # 执行数据预处理脚本
-        preprocess_cmd = f'python /haplox/users/chenjh/haima/snakemake/scripts/workflow_scripts/haima_preprocess.py -i sample_info/raw_haima_csv/{batch_id}.csv -o sample_info/snakemake_sample_yaml/{batch_id}.yaml'
-        preprocess_res = subprocess.run(preprocess_cmd, shell=True, executable='/bin/bash')
+        # 1. 定义环境激活命令       
+        activate_env_cmd = "source /haplox/users/chenjh/miniforge3/bin/activate /haplox/users/chenjh/miniforge3/envs/snakemake"
+        
+        # 2. 定义原始的预处理 python 命令
+        py_script_cmd = f'python /haplox/users/chenjh/haima/snakemake/scripts/workflow_scripts/haima_preprocess.py -i sample_info/raw_haima_csv/{batch_id}.csv -o sample_info/snakemake_sample_yaml/{batch_id}.yaml'
+        
+        # 3. 组合命令：先激活环境，成功后(&&)再运行预处理
+        full_preprocess_cmd = f"{activate_env_cmd} && {py_script_cmd}"
+        
+        logging.info(f"Running preprocess for {batch_id} with env activation...")
+        
+        # 4. 执行组合后的命令 (注意: shell=True, executable='/bin/bash' 是必须的，因为 source 是 bash 内建命令)
+        preprocess_res = subprocess.run(full_preprocess_cmd, shell=True, executable='/bin/bash')
+        
         if preprocess_res.returncode != 0:
             logging.error("Preprocess failed")
-            return None       
+            return None        
         # 运行snakemake流程
-        snakemake_cmd = f'snakemake --cores 36 -p --config sample_config="sample_info/snakemake_sample_yaml/{batch_id}.yaml" --rerun-incomplete >> logs/snakemake.log 2>&1'
+        snakemake_cmd = f'snakemake --cores 48 -p --config sample_config="sample_info/snakemake_sample_yaml/{batch_id}.yaml" --rerun-incomplete >> logs/snakemake.log 2>&1'
         
         # 执行所有命令
         full_cmd = f"source /haplox/users/chenjh/miniforge3/bin/activate /haplox/users/chenjh/miniforge3/envs/snakemake && {snakemake_cmd}"

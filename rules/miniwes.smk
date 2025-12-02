@@ -257,14 +257,14 @@ rule dipin_analysis:
         # 修改输出目录权限
         docker run --rm \
             -v {params.workdir}:/workspace \
-            {params.docker_image} \
+            {params.docker_volumes} \
             {params.docker_container} \
             chmod 777 -R /workspace/results/{wildcards.sed_id}/{wildcards.sample}/dipin/        
         
         # 步骤1: 运行Dipin分析docker容器
         docker run --rm \
             -v {params.workdir}:/workspace \
-            {params.docker_image} \
+            {params.docker_volumes} \
             {params.docker_container} hgbp \
                 -t {wildcards.sample} \
                 -b /workspace/{input.bqsr_bam} \
@@ -279,7 +279,7 @@ rule dipin_analysis:
         # 修改输出目录权限
         docker run --rm \
             -v {params.workdir}:/workspace \
-            {params.docker_image} \
+            {params.docker_volumes} \
             {params.docker_container} \
             chmod 777 -R /workspace/results/{wildcards.sed_id}/{wildcards.sample}/dipin/
         

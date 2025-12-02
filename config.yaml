@@ -65,13 +65,13 @@ BED_FILE_DICT:
   "NAD2501_WES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2501_WES/NEXome_XP-65site.probe.cover.hg19.bed"
   "NAD-XTJ2211": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD-XTJ2211/probe-covered.merged.bed"
   "NAD2403_miniWES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2403_miniWES/HaploX_miniWES_0829.nochrm.bed"
-  #"MAD-34PULES": "/haplox/users/chenjh/database/bed_file/MRD_120nt/MDR_120nt.bed" 
+  "NADProbes-120nt": "/haplox/users/chenjh/database/bed_file/MRD_120nt/MDR_120nt.bed" 
 # 在原来的bed文件的基础上扩展±100bp
 BED_FILE_QC_DICT:
   "NAD2501_WES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2501_WES/NEXome_XP-65site.probe.cover.ext100.hg19.bed"
   "NAD-XTJ2211": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD-XTJ2211/probe-covered_slop100.merged.bed"
   "NAD2403_miniWES": "/haplox/users/chenjh/database/haima_file/panel_bed/NAD2403_miniWES/HaploX_miniWES_0829.slop100.bed"
-  #"MAD-34PULES": "/haplox/users/chenjh/database/bed_file/MRD_120nt/MDR_120nt_slop60.bed" 
+  "NADProbes-120nt": "/haplox/users/chenjh/database/bed_file/MRD_120nt/MDR_120nt_slop60.bed" 
 
 # 性别分析参数配置
 GENDER_PARAMS:

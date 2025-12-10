@@ -339,7 +339,8 @@ rule upload_miniwes_results:
     """上传miniwes分析结果文件到海普云"""
     input:
         sma_csv = rules.deal_sma_dipin_result.output.sma_csv,
-        dipin_csv = rules.deal_sma_dipin_result.output.dipin_csv
+        dipin_csv = rules.deal_sma_dipin_result.output.dipin_csv,
+        qc_info_csv = rules.qc_analysis.output.qc_info_csv
     output:
         upload_success = "results/{sed_id}/{sample}/upload_miniwes_success.txt"
     params:
@@ -360,6 +361,8 @@ rule upload_miniwes_results:
         # 上传DIPIN结果文件
         {params.ossutil_path} cp -f {input.dipin_csv} {params.oss_bucket}/{params.sed_id_short}/{wildcards.sed_id}/
         
+        # 上传质控报告
+        {params.ossutil_path} cp -f {input.qc_info_csv} {params.oss_bucket}/{params.sed_id_short}/{wildcards.sed_id}/
         # 创建上传成功标志文件
         echo "MinIWES upload completed at $(date)" > {output.upload_success}
         

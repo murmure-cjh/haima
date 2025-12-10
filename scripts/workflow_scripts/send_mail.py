@@ -26,9 +26,9 @@ mail_port=465
 sender_name = 'chenjh'
 sender_email = 'chenjh@haplox.com'
 
-maintainer_receviers = ['chenjh@haplox.com','chenbf@haplox.com', 'linyushan@haplox.com', 'huyw@haplox.com', 'wangyz@haplox.com', 'wuliuyu@haplox.com']
-maintainer_receviers_SZ = ['chenjh@haplox.com', 'linyushan@haplox.com', 'wangyz@haplox.com']
-maintainer_receviers_JX = ['chenjh@haplox.com', 'wangyz@haplox.com', 'chenbf@haplox.com', 'huyw@haplox.com', 'wuliuyu@haplox.com']
+maintainer_receviers = ['chenjh@haplox.com','zhangwy@haplox.com','chenbf@haplox.com', 'linyushan@haplox.com', 'huyw@haplox.com', 'wangyz@haplox.com', 'wuliuyu@haplox.com']
+maintainer_receviers_SZ = ['chenjh@haplox.com', 'zhangwy@haplox.com','linyushan@haplox.com', 'wangyz@haplox.com']
+maintainer_receviers_JX = ['chenjh@haplox.com', 'zhangwy@haplox.com','wangyz@haplox.com', 'chenbf@haplox.com', 'huyw@haplox.com', 'wuliuyu@haplox.com']
 
 start_email_subject = '【海码生产】批次 {} 启动'
 start_email_content = '批次 {} 启动\n 详细信息请查看附件'

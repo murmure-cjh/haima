@@ -206,7 +206,7 @@ rule upload_file:
         {params.ossutil_path} cp -f {input.haima_germline_vcf} {params.oss_bucket}/{params.sed_id_short}/{wildcards.sed_id}/
         
         # 目前不上传质控信息
-        #{params.ossutil_path} cp -f {input.qc_info_txt} {params.oss_bucket}/{params.sed_id_short}/{wildcards.sed_id}/
+        # {params.ossutil_path} cp -f {input.qc_info_txt} {params.oss_bucket}/{params.sed_id_short}/{wildcards.sed_id}/
         
         # 创建上传成功标志文件
         echo "Upload completed at $(date)" > {output.upload_success}

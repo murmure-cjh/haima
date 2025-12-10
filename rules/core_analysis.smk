@@ -162,7 +162,6 @@ rule realign_bqsr:
         mills_indel = config['mills_indel'],
         phase1_indel = config['phase1_indel'],
         bed = get_bed_file,  # 使用动态BED文件获取函数
-        dipin_bed_slop60 = config['dipin_bed_slop60']
     log:
         realign = "results/{sed_id}/{sample}/logs/{sample}_realign.log",
         haplotyper = "results/{sed_id}/{sample}/logs/{sample}_Haplotyper.log"

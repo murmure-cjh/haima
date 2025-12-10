@@ -58,7 +58,7 @@ hg38_dbsnp: "/haplox/users/chenjh/database/haima_file/Realigner_indel/dbsnp.vcf.
 hg38_annovar: "/haplox/users/chenjh/database/annovar/hg38_db/"
 
 # 流程，目前主要有三个流程，大天机-NAD2501_WES，小天机-NAD-XTJ2211，小全外-NAD2403_miniWES
-# 2025.11.21 新增流程 轻悦安，精准瘦身基因检测，升级版-MAD34PULES（探针名待定）
+# 2025.11.21 新增流程 轻悦安，精准瘦身基因检测，升级版NADProbes-120nt
 # BED文件配置 - 根据panel类型动态选择
 # 目前只存在三个panel
 BED_FILE_DICT:

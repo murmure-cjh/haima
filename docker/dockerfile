@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     bzip2 \
     ca-certificates \
-    && wget -q https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease/Miniforge3-25.9.1-0-Linux-x86_64.sh -O /tmp/miniforge.sh \
+    && wget -q https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease/Miniforge3-Linux-x86_64.sh -O /tmp/miniforge.sh \
     && bash /tmp/miniforge.sh -b -p /opt/conda \
     && rm /tmp/miniforge.sh \
     && conda config --add channels bioconda \

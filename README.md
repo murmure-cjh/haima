@@ -1,5 +1,136 @@
-# snakemake.log文件快速查找报错
-AttributeError
+# 🧬 Haima NGS Analysis Workflow (Snakemake)
+这是一个基于 Snakemake 构建的 NGS 自动化分析流程（针对 Haima 项目）。该流程涵盖了从原始数据下载、预处理、变异检测（Calling）、注释（Annotation）到最终报告生成的全过程。流程特别集成了 SMA、地贫（Dipin）以及药物基因组的分析模块。
+
+
+## 📋 目录结构
+```
+.
+├── Snakefile                   # Snakemake 主入口文件
+├── config.yaml                 # 流程主配置文件（包含参考基因组路径、软件路径等）
+├── rules/                      # 模块化的 Snakemake 规则
+│   ├── common_def.smk          # 通用函数定义
+│   ├── core_analysis.smk       # 核心分析模块 (QC, Alignment, Variant Calling)
+│   ├── annotation_analysis.smk # 注释与下游分析模块
+│   └── miniwes.smk             # 小全外显子组特定分析 (SMA, Dipin 等)
+├── scripts/                    # Python 脚本集
+│   ├── analysis_scripts/       # 生物信息分析核心脚本 (注释, ACMG, 结果处理)
+│   └── workflow_scripts/       # 流程控制脚本 (数据下载, 监控, 邮件发送)
+├── sample_info/                # 样本信息管理
+│   ├── raw_haima_csv/          # 原始样本信息表 (CSV)
+│   └── snakemake_sample_yaml/  # 生成的流程配置文件 (YAML)
+├── docker/                     # Docker 环境构建文件
+├── env_yaml/                   # Conda 环境配置文件
+└── raw_data/                   # [临时] 原始 FASTQ 数据存放目录
+```
+
+## 📜 关键脚本说明
+
+### 📂 workflow_scripts (流程控制)
+
+位于 `scripts/workflow_scripts/`，主要负责流程的调度、监控和辅助功能。
+
+| 脚本名 | 功能描述 |
+| :--- | :--- |
+| `haima_preprocess.py` | **预处理核心**：将云端的样本信息表（CSV）转换为 Snakemake 所需的 YAML 配置文件，并处理 FASTQ 数据的下载逻辑。 |
+| `monitor.py` | **监控主程序**：负责监控新任务，自动触发 Snakemake 分析流程。集成了发送邮件和合并 QC 的功能模块。 |
+| `merge_qc.py` | **QC合并**：当批次内所有样本分析完成后，将 QC 结果与样本信息表合并，生成最终的质控报告（作为邮件附件）。 |
+| `send_mail.py` | **邮件通知**：分析结束后的邮件发送模块（沿用旧流程逻辑）。 |
+
+### 📂 analysis_scripts (生信分析)
+
+位于 `scripts/analysis_scripts/`，主要涉及生物信息学分析的具体逻辑，部分脚本被打包进 Docker 镜像中。
+
+| 脚本名 | 功能描述 |
+| :--- | :--- |
+| `anno_caller.py` | **注释整合**：调用 Annovar 和 VEP 进行变异注释，并整合两者的结果。 |
+| `haimaresult.py` | **结果过滤与处理**：核心处理脚本，包含复杂的注释结果解析、附加数据库信息添加以及变异过滤逻辑。 |
+| `acmg_classifier.py` | **ACMG 评级**：根据 ACMG 规则对变异位点进行自动评级（被 `haimaresult.py` 调用）。 |
+| `haima_snp.py` | **药物基因组**：专门处理药物基因组（PGx）相关的位点分析。 |
+| `deal_sma_dipin_result.py` | **SMA/地贫格式化**：处理 SMA 和地贫（Dipin）的分析结果，转换为可上传的格式。 |
+| `transform_haima_result.py` | **IT 格式转换**：将 `haimaresult.py` 和 `haima_snp.py` 的输出结果转换为业务系统（IT）所需的特定格式。 |
+| `qc_fload_analysis.py` | **质控统计**：处理和分析质控（QC）结果。 |
+| `deal_sma_workout.py` | **SMA 分析核心**：SMA 分析的具体计算逻辑（沿用旧流程）。 |
+
+
+## 🛠️ 环境部署
+
+```
+### conda环境
+conda activate snakemake
+source activate /x03_haplox/users/chenjh/miniforge3/envs/snakemake
+
+### Docker 构建
+
+# 1. 更新 Docker 内的脚本 (解决上下文问题)
+cp scripts/analysis_scripts/* docker/scripts/
+
+# 2. 构建镜像
+cd docker
+docker build -t xiaohaima .
+```
+
+## 🚀 流程运行 
+### 自动化监控运行
+
+- 使用监控脚本自动处理新任务，并发送邮件等。
+```
+nohup python scripts/workflow_scripts/monitor.py >> logs/monitor.out 2>&1 &
+```
+
+### 手动运行任务
+#### 步骤 1: 数据预处理 (Preprocessing)
+
+- 从云端获取样本信息表，并转换为 Snakemake 需要的 YAML 配置文件，同时触发数据下载。
+
+```
+
+# 示例：获取样本表
+coscli cp cos://sz-hapseq/rawfq/JX_health/.../sample.csv sample_info/raw_haima_csv/
+
+# 运行预处理脚本
+python scripts/workflow_scripts/haima_preprocess.py \
+    -i sample_info/raw_haima_csv/sample_list.csv \
+    -o sample_info/snakemake_sample_yaml/sample_config.yaml
+
+```
+
+### 步骤 2: 流程检查 (Dry Run)
+
+- 在正式运行前，建议检查语法和执行计划。
+
+```
+# 语法检查
+snakemake -n --lint
+
+# 查看执行计划 (Dry run)
+snakemake --configfile config.yaml -n -p
+```
+
+### 步骤 3: 正式运行
+
+```
+# 手动运行或者Debug
+# 如果不指定 --config sample_config，默认读取目录中日期最新的 YAML 文件。
+# 使用 36 核心运行
+snakemake --cores 36 -p
+
+# 指定特定配置文件运行
+snakemake --cores 36 -p --config sample_config="sample_info/snakemake_sample_yaml/target.yaml"
+
+# 后台运行
+nohup snakemake --cores 36 -p --config sample_config="sample_info/snakemake_sample_yaml/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.yaml" --rerun-incomplete >> logs/snakemake.log 2>&1 &
+```
+
+
+## ⚙️ 管理与维护
+
+```
+# 日志文件 (logs/)
+snakemake.log: 主流程运行日志 (查找报错关键词: AttributeError, Error)
+
+monitor.log: 监控脚本运行日志
+
+monitor.out: 下载与标准输出日志
 
 # 查看和杀死snakemake相关的任务
 ps aux | grep snakemake
@@ -7,90 +138,6 @@ kill -9 id
 # 运行监控脚本并开始自动分析任务
 nohup python /haplox/users/chenjh/haima/snakemake/scripts/workflow_scripts/monitor.py >> /haplox/users/chenjh/haima/snakemake/logs/monitor.out 2>&1 &
 
-
-# 下面相当于monitor.py中的具体运行命令，也是本地运行snakemake流程的命令
-# 激活环境
-conda activate snakemake
-source activate /haplox/users/chenjh/miniforge3/envs/snakemake
-# 获取样本信息表
-coscli cp cos://sz-hapseq/rawfq/JX_health/Nova/sample_info_merge/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.csv  sample_info/raw_haima_csv/
-
-# 数据预处理脚本，包括下载数据(默认下载到raw_data文件夹下)等，从样本信息表中下载fq文件+获取流程配置文件
-python scripts/workflow_scripts/haima_preprocess.py -i sample_info/raw_haima_csv/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.csv -o sample_info/snakemake_sample_yaml/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.yaml
-
-# 运行流程，使用对应的样本配置文件，如果不指定，默认使用日期最新的配置文件（03总共72个cpu）
-snakemake --cores 36 -p
-nohup snakemake --cores 36 -p --rerun-incomplete >> logs/snakemake.log 2>&1 &
-nohup snakemake --cores 36 -p --config sample_config="sample_info/snakemake_sample_yaml/20251120_LH00348_0494_B235VM2LT4_clinical_qc_haima_1.yaml" --rerun-incomplete >> logs/snakemake.log 2>&1 &
-
-
-# 当前路径文件夹说明
--rw-rw-r-- 1 chenjh chenjh    4424 11月 21 17:01 config.yaml  整个流程的配置文件，包含注释前步骤依赖的固定路径，如bed文件，参考基因组等，文件中有具体的注释说明
--rw-r--r-- 1 chenjh chenjh   35386 11月 24 08:46 coscli.log   coscli 下载的日志，目前coscli版本不支持自定义日志路径
-drwxrwxr-x 3 chenjh chenjh      49 11月 17 17:38 docker       Dockerfile 以及需要导入Docker的脚本
-drwxrwxr-x 2 chenjh chenjh      39 11月 18 11:26 env_yaml     conda环境配置文件，目前只有sentieon步骤实际需要这个conda环境，但是每个rule，snakemake都建议添加conda配置，故所有rule都使用这个xiaohaima_x03.yaml这个配置文件（来源于旧流程主要运行环境/x03_haplox/users/wangx/anaconda3/envs/xiaohaima/）
-drwxrwxr-x 2 chenjh chenjh   12288 11月 24 08:46 raw_data     所有的下载fq文件，需要定期清理
--rw-rw-r-- 1 chenjh chenjh    2028 11月 21 18:12 README.md    说明文件
-drwxrwxr-x 6 chenjh chenjh    4096 11月 24 08:56 results      结果文件路径
-drwxrwxr-x 2 chenjh chenjh     119 11月  7 15:36 rules        子snakemake模块 文件有注释 以下为简单说明 common_def.smk:流程运行需要的函数，可能有冗余 core_analysis.smk：核心rule call变异部分的rule 为每个流程都需要运行模块 annotation_analysis.smk：注释和分析流程模块，对calling的注释和信息处理，也为每个流程都需要运行模块 miniwes.smk：小全外需要单独运行的模块，包含hg38基因组版本的call变异，SMA和Dipin分析等模块
-drwxrwxr-x 4 chenjh chenjh      66 11月 19 10:37 sample_info  样本信息文件夹，包含raw_haima_csv 从云上下载的样本信息表 snakemake_sample_yaml经过haima_preprocess.py脚本转换后的yaml文件
-drwxrwxr-x 2 chenjh chenjh     78 11月 26 18:22 logs          包含了snakemake.log 流程日志，monitor.log监控日志，monitor.out下载日志
-drwxrwxr-x 3 chenjh chenjh    4096 11月 21 14:35 scripts      所有脚本的路径，且全部打包进了Docker，更新脚本需要负责脚本到docker/scripts/下，然后更新Docker
--rw-rw-r-- 1 chenjh chenjh    1588 11月 21 11:34 Snakefile    snakemake主流程文件
-
-
-
-# 脚本文件夹说明
-# /haplox/users/chenjh/haima/snakemake/scripts/analysis_scripts
--rw-rw-r-- 1 chenjh chenjh 20396 11月  6 11:09 acmg_classifier.py        acmg评级规则脚本，导入haimaresult.py脚本中使用
--rw-rw-r-- 1 chenjh chenjh 31743 11月 21 18:01 anno_caller.py            注释脚本，包含annovar与vep注释，并整合结果
--rw-rw-r-- 1 chenjh chenjh 13332 11月 21 14:35 deal_sma_dipin_result.py  处理地贫和sma结果为可上传的格式
--rw-rw-r-- 1 chenjh chenjh  4828 11月 13 09:49 deal_sma_workout.py       SMA分析需要的脚本，来源于旧流程，未改动
--rw-rw-r-- 1 chenjh chenjh 19519 11月 24 10:42 haima_preprocess.py       流程前处理脚本，将云上的样本信息表，处理流程需要的yaml文件和下载fq文件
--rw-rw-r-- 1 chenjh chenjh 23325 11月 19 17:30 haimaresult.py            注释结果处理脚本，较复杂，包含附加数据添加，过滤等步骤
--rw-rw-r-- 1 chenjh chenjh 22907 11月 21 18:08 haima_snp.py              药物基因组脚本
-drwxrwxr-x 2 chenjh chenjh   135 11月 11 11:08 __pycache__
--rw-rw-r-- 1 chenjh chenjh 24354 11月 21 18:12 qc_fload_analysis.py      质控结果处理脚本
--rw-rw-r-- 1 chenjh chenjh 13200 11月 21 17:22 transform_haima_result.py 海码结果处理脚本，处理haimaresult.py和haima_snp.py的结果为IT需要的格式
-
-
-# /haplox/users/chenjh/haima/snakemake/scripts/workflow_scripts
-
--rwxrwxr-x 1 chenjh chenjh 19519 11月 24 10:42 haima_preprocess.py        预处理脚本，是将拆分给的csv表转换为snakemake流程需要yaml文件
--rw-rw-r-- 1 chenjh chenjh  3899 11月 28 16:20 merge_qc.py                合并质控结果的脚本，在全部样本分析完成后会将所有样本的qc结果和样本csv表合并，然后作为结束邮件的附件
--rwxrwxr-x 1 chenjh chenjh 11373 11月 28 16:20 monitor.py                 监控脚本，send_mail和merge_qc都为里面的模块，负责自动开始分析snakemake流程
-drwxrwxr-x 2 chenjh chenjh    81 11月 28 16:21 __pycache__
--rwxrwxr-x 1 chenjh chenjh  5579 11月 28 11:27 send_mail.py               发送邮件脚本，完全来自于旧流程
-
-
-
-
-# 搭建流程经常用到的命令
-
-# 创建更新docker
-cp scripts/analysis_scripts/* docker/scripts/  # 因为构建Docker时上下文的问题，所以将要转移的脚本复杂过去
-cd docker
-docker build -t xiaohaima .
-
-# 激活环境
-conda activate snakemake
-
-# 步骤1: 语法检查
-snakemake -n --lint
-
-# 步骤2: 检查配置
-snakemake --configfile config.yaml -n
-snakemake --configfile config.yaml --rerun-incomplete -n 忽略中间文件
-# 步骤3: 干运行检查命令
-snakemake -n -p
-snakemake -n --reason --printshellcmds
-
-# 具体运行
-snakemake --cores 36 -p  --config sample_config="指定路径/配置文件.yaml" # 手动指定预处理脚本的结果文件，默认参数为sample_info/snakemake_sample_y
-aml/目录下日期最新的yaml文件
-snakemake --cores 36 -p --rerun-incomplete    # 从头开始跑
-nohup snakemake --cores 36 -p --rerun-incomplete >> logs/snakemake.log 2>&1 &
-
 # 目录解锁
 snakemake --unlock
-
+```

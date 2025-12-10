@@ -138,7 +138,7 @@ def generate_shell_script_csv_report(result_dir: Path, sample: str,
     q30_rate = fastp_quality_data['q30_rate']
     
     # 写入CSV文件
-    with open(csv_file_path, 'w', encoding='utf-8-sig') as csv_file:  # utf-8-sig for Excel compatibility
+    with open(csv_file_path, 'w', encoding='utf-8') as csv_file: 
         csv_file.write(header + '\n')
         csv_file.write(f"{sample},{mapping_rate},{average_depth},{coverage_20x},{coverage_30x},{q20_rate},{q30_rate}\n")
     
